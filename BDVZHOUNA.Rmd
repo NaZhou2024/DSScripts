@@ -1,0 +1,149 @@
+---
+title: "Visualization_Exercise"
+author: "Na Zhou"
+date: "11/18/2024"
+output: html_document
+---
+
+1.5.5 Exercises
+
+The mpg data frame that is bundled with the ggplot2 package contains 234 observations collected by the US Environmental Protection Agency on 38 car models. Which variables in mpg are categorical? Which variables are numerical? (Hint: Type ?mpg to read the documentation for the dataset.) How can you see this information when you run mpg?
+
+```{r}
+library(ggplot2)
+library(palmerpenguins)
+library(dplyr)
+library(readr)
+head(mpg)
+#categorical variables are : manufacturer, model, trans, drv, fl and class
+#numerical variables are: displ, year, cyl, cty, hwy
+```
+
+
+Make a scatterplot of hwy vs. displ using the mpg data frame. Next, map a third, numerical variable to color, then size, then both color and size, then shape. How do these aesthetics behave differently for categorical vs. numerical variables?
+```{r}
+scatterplot <- ggplot(data=mpg, mapping=aes(x=displ, y=hwy, color=cty, size=hwy, shape=drv))+
+               geom_point()+
+               labs(title = "Highway MPG vs. Engine Displacement, Shaped by Drive Type",
+                    x = "Engine Displacement (liters)",
+                    y = "Highway MPG",
+                    shape = "Drive Type")
+scatterplot
+#for numerical variables, color Uses a gradient scale, providing a smooth transition between colors that visually represents the range of values, whereas for categorical variables, color assign distinct colors to each category without a gradient.
+```
+
+
+In the scatterplot of hwy vs. displ, what happens if you map a third variable to linewidth?
+```{r}
+linewidth <- ggplot(mpg, aes(x = displ, y = hwy, linewidth = cty)) +
+    geom_line() +
+    labs(title = "Highway MPG vs. Engine Displacement with Line Width Representing City MPG",
+         x = "Engine Displacement (liters)",
+         y = "Highway MPG",
+         linewidth = "City MPG")
+linewidth
+```
+
+
+What happens if you map the same variable to multiple aesthetics?
+```{r}
+same_variable <- ggplot(mpg, aes(x = displ, y = hwy, color = cty, size = cty)) +
+    geom_point() +
+    labs(title = "Highway MPG vs. Engine Displacement, with City MPG Mapped to Color and Size",
+         x = "Engine Displacement (liters)",
+         y = "Highway MPG",
+         color = "City MPG",
+         size = "City MPG")
+same_variable
+```
+
+Make a scatterplot of bill_depth_mm vs. bill_length_mm and color the points by species. What does adding coloring by species reveal about the relationship between these two variables? What about faceting by species?
+```{r}
+penguins_bill_scatterplot <- ggplot(penguins, aes(x = bill_length_mm, y = bill_depth_mm, color = species)) +
+            geom_point() +
+            labs(title = "Bill Depth vs. Bill Length Colored by Species",
+                 x = "Bill Length (mm)",
+                 y = "Bill Depth (mm)",
+                 color = "Species")
+penguins_bill_scatterplot
+#Adding color by species reveals how each species’ bills differ in both depth and length in distinct color clusters, eg Gentoo species has longer bill length, smaller bill depth whereas Adelie has larger bill depth but shorter bill length.
+
+faceting_species <- ggplot(penguins, aes(x = bill_length_mm, y = bill_depth_mm)) +
+                    geom_point(aes(color = species)) +
+                    facet_wrap(~ species) +
+                    labs(title = "Bill Depth vs. Bill Length Faceted by Species",
+                         x = "Bill Length (mm)",
+                         y = "Bill Depth (mm)",
+                         color = "Species")
+faceting_species
+#coloring by species reveals inter-species differences and clusters in bill characteristics, while faceting by species emphasizes within-species relationships and allows for isolated comparisons of bill depth and length for each species.
+```
+
+Why does the following yield two separate legends? How would you fix it to combine the two legends?
+
+ggplot(
+  data = penguins,
+  mapping = aes(
+    x = bill_length_mm, y = bill_depth_mm, 
+    color = species, shape = species
+  )
+) +
+  geom_point() +
+  labs(color = "Species")
+  
+```{r}
+ggplot(
+  data = penguins,
+  mapping = aes(
+    x = bill_length_mm, y = bill_depth_mm, 
+    color = species, shape = species
+  )
+) +
+  geom_point() +
+  labs(color = "Species", shape="Species")
+#The reason the code yields two separate legends is that both color and shape are mapped to the species variable, but ggplot2 interprets them as two separate aesthetics, each needing its own legend. Therefore adding a label for shape would fix this two legend issue
+```
+  
+
+Create the two following stacked bar plots. Which question can you answer with the first one? Which question can you answer with the second one?
+
+ggplot(penguins, aes(x = island, fill = species)) +
+  geom_bar(position = "fill")
+ggplot(penguins, aes(x = species, fill = island)) +
+  geom_bar(position = "fill")
+  
+```{r}
+ggplot(penguins, aes(x = island, fill = species)) +
+  geom_bar(position = "fill")
+ggplot(penguins, aes(x = species, fill = island)) +
+  geom_bar(position = "fill")
+#question 1: how does different penguins species distribute on each island?
+#question 2: for each penguins species, does it prefer a single island or mutiple islands?
+```
+
+
+
+1.6.1 Exercises
+
+Run the following lines of code. Which of the two plots is saved as mpg-plot.png? Why?
+
+ggplot(mpg, aes(x = class)) +
+  geom_bar()
+ggplot(mpg, aes(x = cty, y = hwy)) +
+  geom_point()
+ggsave("mpg-plot.png")
+
+What do you need to change in the code above to save the plot as a PDF instead of a PNG? How could you find out what types of image files would work in ggsave()?
+
+```{r}
+ggplot(mpg, aes(x = class)) +
+  geom_bar()
+ggplot(mpg, aes(x = cty, y = hwy)) +
+  geom_point()
+ggsave("mpg-plot.png")
+ggsave("mpg-plot.pdf")
+#geom_point plot is saved as mpg-plot.png, since ggsave() saves the most recently created plot by default, which is why the scatter plot, not the bar plot, gets saved.
+?ggsave
+#In the ggsave documentation, under the filename argument,ggsave supports formats "png", "eps", "ps", tex(pictex), "pdf", "jpeg", "tiff", "png", "bmp", "svg" or "wmf" (windows only). 
+```
+
