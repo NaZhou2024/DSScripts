@@ -1,0 +1,87 @@
+---
+title: "Data_Import"
+author: "Na Zhou"
+date: "Dec 2nd 2024"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+###7.2.4 Exercises
+
+1. What function would you use to read a file where fields were separated with “|”?
+
+#read_delim(), reads in files with any delimiter
+
+2. Apart from file, skip, and comment, what other arguments do read_csv() and read_tsv() have in common?
+
+#apart from file, skip and comment, both read_csv() and read_txv() also have common arguments like col_names, col_types, quote, na etc.
+
+
+3. What are the most important arguments to read_fwf()?
+
+#file path to be read by read_fwf();
+#fwf_widths(): Specify column widths directly
+#fwf_positions(): Specify start and end positions for each column
+#fwf_empty(): Automatically detect column positions based on empty space.
+
+4. Sometimes strings in a CSV file contain commas. To prevent them from causing problems, they need to be surrounded by a quoting character, like " or '. By default, read_csv() assumes that the quoting character will be ". To read the following text into a data frame, what argument to read_csv() do you need to specify?
+
+"x,y\n1,'a,b'"
+
+#I need to specify the quote argument "'", to inform read_csv() that single quotes are used to enclose text fields, treat 'a,b' as a single field.
+
+5. Identify what is wrong with each of the following inline CSV files. What happens when you run the code?
+```{r}
+read_csv("a,b\n1,2,3\n4,5,6")
+read_csv("a,b,c\n1,2\n1,2,3,4")
+read_csv("a,b\n\"1")
+read_csv("a,b\n1,2\na,b")
+read_csv("a;b\n1;3")
+
+```
+#line 38, 2 variables but three values per row, results in a mismatch between the number of columns in the header and the data rows, read_csv() issue a Warning: One or more parsing issues
+#Line 39, the first row defines three columns (a, b, c). The second row (1,2) has only two values, while the third row (1,2,3,4) has four values, causing column count mismatches. read_csv() issues warnings for parsing failures. The data frame will contain NA for missing values and an extra column for the surplus values
+#Line40, the string "1" is quoted but incomplete (no closing quote), which results in an unterminated quoted string. The read_csv function fails to parse the file entirely
+#Line41, the third row (a,b) repeats the header row, which can cause confusion or ambiguity in parsing. read_csv() parses the data without errors, but the repeated header row is treated as data
+#Line42, the delimiter used in this file is ";" instead of ",". By default, read_csv() expects a comma ",". read_csv() interprets the entire row as a single column
+
+Practice referring to non-syntactic names in the following data frame by:
+
+1. Extracting the variable called 1.
+2. Plotting a scatterplot of 1 vs. 2.
+3. Creating a new column called 3, which is 2 divided by 1.
+4. Renaming the columns to one, two, and three.
+```{r}
+library(ggplot2)
+library(tibble)
+library(dplyr)
+annoying <- tibble(
+  `1` = 1:10,
+  `2` = `1` * 2 + rnorm(length(`1`))
+)
+# Extract the variable called `1`
+variable_1 <- annoying$`1`
+print(variable_1)
+
+# Scatterplot
+ggplot(annoying, aes(x = `1`, y = `2`)) +
+  geom_point(color = "blue", size = 3) +
+  labs(
+    x = "1",
+    y = "2",
+    title = "Scatterplot of 1 vs. 2"
+  )
+
+# Add a new column `3`
+annoying <- annoying |> 
+  mutate(`3` = `2` / `1`)
+
+# Rename columns
+annoying <- annoying |> 
+  rename(one = `1`, two = `2`, three = `3`)
+
+print(annoying)
+```
