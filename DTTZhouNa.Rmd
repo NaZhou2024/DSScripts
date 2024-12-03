@@ -1,0 +1,175 @@
+---
+title: "DataTrans_DatTidy_Lab"
+author: "Na Zhou"
+date: "Dec 2nd 2024"
+output: html_document
+---
+
+###Data Transformation
+
+##Start by loading library(tidyverse) and library(dplyr) if not done already.
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(nycflights13)
+View(flights)
+```
+
+
+3.2.5 Exercises
+In a single pipeline for each condition, find all flights that meet the condition:
+
+1. Had an arrival delay of two or more hours
+2. Flew to Houston (IAH or HOU)
+3. Were operated by United, American, or Delta
+4. Departed in summer (July, August, and September)
+5. Arrived more than two hours late but didn’t leave late
+6. Were delayed by at least an hour, but made up over 30 minutes in flight
+7. Sort flights to find the flights with the longest departure delays. Find the flights that left earliest in the morning.
+
+8. Sort flights to find the fastest flights. (Hint: Try including a math calculation inside of your function.)
+
+9. Was there a flight on every day of 2013?
+
+10. Which flights traveled the farthest distance? Which traveled the least distance?
+
+11. Does it matter what order you used filter() and arrange() if you’re using both? Why/why not? Think about the results and how much work the functions would have to do.
+
+```{r}
+#1. Had an arrival delay of two or more hours
+answer_1 <- flights |> 
+              filter(arr_delay >= 120)
+answer_1
+#2. Flew to Houston (IAH or HOU)
+answer_2 <- flights |>
+              filter(dest %in% c("IAH", "HOU"))
+answer_2
+#3. Were operated by United, American, or Delta
+answer_3 <- flights |>
+              filter(carrier %in% c("UA", "AA", "DL"))
+answer_3
+#4. Departed in summer (July, August, and September)
+answer_4 <- flights |>
+              filter(month %in% c(7, 8, 9))
+answer_4
+#5. Arrived more than two hours late but didn’t leave late
+answer_5 <- flights |> 
+              filter(arr_delay > 120, dep_delay <= 0)
+answer_5
+#6. Were delayed by at least an hour, but made up over 30 minutes in flight
+answer_6 <- flights |>
+              filter(dep_delay >= 60, (dep_delay - arr_delay) > 30)
+answer_6
+#7. Sort flights to find the flights with the longest departure delays. 
+answer_7_1 <- flights |>
+                arrange(desc(dep_delay)) |> 
+                slice(1)
+answer_7_1
+#Find the flights that left earliest in the morning.
+answer_7_2 <- flights |>
+                arrange(dep_time) |> 
+                slice(1)
+answer_7_2
+#8. Sort flights to find the fastest flights. (Hint: Try including a math calculation inside of your function.)
+answer_8 <- flights |>
+              mutate(speed = distance / (air_time / 60)) |> 
+              arrange(desc(speed)) |>
+              relocate(speed) |> 
+              slice(1)
+answer_8
+#9. Was there a flight on every day of 2013? Yes, there was a flight on every day of 2013
+answer_9 <- flights |>
+              distinct(year, month, day) |> 
+              nrow()
+answer_9
+#10. Which flights traveled the farthest distance? 
+answer_10_1 <- flights |>
+                  arrange(desc(distance)) |> 
+                  slice(1)
+answer_10_1
+#Which traveled the least distance?
+answer_10_2 <- flights |>
+                  arrange(distance) |> 
+                  slice(1)
+answer_10_2
+#11. Does it matter what order you used filter() and arrange() if you’re using both? Why/why not? Think about the results and how much work the functions would have to do.
+#Yes, it matters the order I use filter() and arrange(), if I use filter() first, it can help me to reduce rows to arrange, if I use arrange() first, it will sort all rows first which causes more computation efficiency and time and I don't need all rows to be sorted either
+```
+
+
+
+###Displaying three tables
+
+TB cases in world
+
+```{r}
+table1
+```
+```{r}
+table2
+```
+```{r}
+table3
+```
+```{r}
+# Compute rate per 10,000
+table1 |>
+  mutate(rate = cases / population * 10000)
+
+
+# Compute total cases per year
+table1 |> 
+  group_by(year) |> 
+  summarize(total_cases = sum(cases))
+
+
+# Visualize changes over time
+ggplot(table1, aes(x = year, y = cases)) +
+  geom_line(aes(group = country), color = "grey50") +
+  geom_point(aes(color = country, shape = country)) +
+  scale_x_continuous(breaks = c(1999, 2000)) # x-axis breaks at 1999 and 2000
+```
+###5.2.1 Exercises
+For each of the sample tables, describe what each observation and each column represents.
+
+#For table1, each observation is TB cases that happen in different countries and years among certain populations
+#For table2, cases and population columns were combined into one column called type, each observation is reporting count of each type in different countries and years
+#For table3, each observation is cases per population count(rate) in different countries and years
+
+Sketch out the process you’d use to calculate the rate for table2 and table3. You will need to perform four operations:
+
+1.  Extract the number of TB cases per country per year.
+2.  Extract the matching population per country per year.
+3.  Divide cases by population, and multiply by 10000.
+4.  Store back in the appropriate place.
+
+You haven’t yet learned all the functions you’d need to actually perform these operations, but you should still be able to think through the transformations you’d need.
+
+
+```{r}
+#1.  Extract the number of TB cases per country per year.
+TB_cases <- table1 |> 
+              select(country, year, cases)
+TB_cases
+#2.  Extract the matching population per country per year.
+TB_population <- table1 |> 
+              select(country, year, population)
+TB_population
+
+
+
+
+```
+
+
+```{r}
+#3.  Divide cases by population, and multiply by 10000.
+rate_table <- table1 |> 
+                mutate(rate = (cases / population) * 10000)
+#4.  Store back in the appropriate place.
+rate_table
+
+
+
+```
