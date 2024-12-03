@@ -1,0 +1,196 @@
+---
+title: "Summary Statistics assignment"
+author: "Na Zhou"
+output: html_document
+date: "2024-12-02"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(tidyverse)
+library(dplyr)
+```
+
+• summary():
+o Provides a quick overview of a dataset or variable, including min, max, median, mean, and quartiles.
+o Example:
+```{r}
+summary(mtcars)
+summary(mtcars$mpg)
+
+#summary of the entire dataset computes min, max, median, mean and quartiles for all the measurements, whereas summary of mpg only returns these statistics of mpg measurement to give us an overview the general mileage per gallon for the cars in the dataset
+```
+
+• mean(), median(), sd(), var(), min(), max():
+```{r}
+mean(mtcars$hp)
+median(mtcars$hp)
+sd(mtcars$hp)
+var(mtcars$hp)
+min(mtcars$hp)
+max(mtcars$hp)
+
+#I computed mean, median, sd, var, min and max for horsepower measurement from mtcars dataset, it seems like mean is larger than median, it suggests that the distribution of horsepower is right skewed, a small number of cars have very high horsepower, pulling the mean to the right. Both the standard deviation and variance are large compared to the mean, indicating there is a significant variability in horsepower values. min and max indicates there's a wide range in this distribution.
+```
+
+• range():
+o Returns the minimum and maximum values of a variable.
+```{r}
+range(mtcars$mpg)
+range(mtcars$hp)
+#range() also returns the min and max values instead of using both min() and max() as in the previous example, horsepower range returns same value with min() and max() function, mileage per gallon has a lower variability than horsepower since its range is way much smaller than mileage per gallon
+```
+• quantile():
+```{r}
+quantile(mtcars$mpg, probs = c(0.25, 0.5, 0.75))
+
+#quantile() function specifies 25%, 50% and 70% level to calculate quantiles.
+```
+Frequency Tables
+• table():
+o Creates frequency tables for categorical variables.
+```{r}
+table(mtcars$cyl)
+
+#table() counts how many cars have each type of engine in this dataset, in this case there are 11 cars with 4 cylinders, there are 7 cars with 6 cylinders and there are 14 cars with 8 cylinders.
+```
+• prop.table():
+o Converts a frequency table into proportions.
+```{r}
+prop.table(table(mtcars$cyl))
+
+#This function takes the output from table() and divides each count by the total number of entries in the dataset to calculate the proportion of each category, 36.36% of the cars have 4 cylinders, 21.21% of the cars have 6 cylinders, 42.42% of the cars have 8 cylinders. This gives a clearer idea of the distribution of cars by cylinder count in relative terms rather than absolute counts.
+```
+Aggregations
+• aggregate():
+o Groups data and computes summary statistics.
+```{r}
+aggregate(mpg ~ cyl, data = mtcars, mean)
+
+#aggregate() is used to group data by one or more variables and compute summary statistics (such as mean, sum, etc.) for each group. This code calculates the mean miles per gallon (mpg) for each group of cars based on the number of cylinders. It groups the cars by cyl and then computes the average mpg for each group. Cars with 4 cylinders have an average mpg of 26.663. Cars with 6 cylinders have an average mpg of 19.742. Cars with 8 cylinders have an average mpg of 15.100.
+```
+2. Data Frame-Specific Tools
+Column Summaries
+• colSums() and colMeans():
+o Summarize data across columns.
+```{r}
+colSums(mtcars)
+colMeans(mtcars)
+
+#colSums(mtcars) computes the sum of all numerical values for each column in the mtcars dataset.
+#colMeans(mtcars) calculates the average value for each column in the mtcars dataset
+```
+• apply():
+o Apply a function (e.g., mean, sum) across rows or columns.
+```{r}
+apply(mtcars, 2, mean)  # Column-wise mean
+#apply(mtcars, 2, mean) calculates the mean of each column (since 2 refers to columns) in the mtcars dataset. The result is similar to colMeans(), but with more flexibility for applying different functions. The apply() function is more flexible because it allows applying a function across both rows and columns, but for simple column-wise operations like mean(), colMeans() is more direct
+```
+Row Summaries
+• rowSums() and rowMeans():
+o Summarize data across rows.
+```{r}
+rowSums(mtcars)
+#rowSums(mtcars) computes the sum of the values for each row (car). This will give the total sum of all variables (such as mpg, hp, wt) for each car in the dataset
+```
+3. Visualization for Summarization
+Histograms and Boxplots
+• hist():
+o Visualize the distribution of a numerical variable.
+```{r}
+hist(mtcars$mpg)
+
+#hist(mtcars$mpg) plot the frequency of cars with different mpg values, showing how many cars fall into each bin of mpg values, this histogram shows that most cars fall within 15-20 mpg.
+```
+• boxplot():
+o Summarize data visually with quartiles and outliers.
+```{r}
+boxplot(mpg ~ cyl, data = mtcars)
+
+#this code generates a boxplot for each cylinder group (4, 6, and 8 cylinders), so I could compare the distribution of mpg values across different groups. Cars with 4 cylinders have a higher median mpg compared to cars with 6 or 8 cylinders, and cars with 6 cylinders may have a narrower range of mpg values with fewer outliers.
+```
+4. Advanced Summarization Using Packages
+dplyr (Tidyverse Package)
+• Simplifies summarization with intuitive functions.
+• Functions:
+o summarize(): Summarizes variables.
+o group_by(): Groups data for aggregation.
+o mutate(): Creates new summarized columns.
+```{r}
+library(dplyr)
+mtcars |> 
+  group_by(cyl) |> 
+  summarize(avg_mpg = mean(mpg), sd_mpg = sd(mpg))
+#This code groups the mtcars dataset by the number of cylinders (cyl) and calculates the average (avg_mpg) and standard deviation (sd_mpg) of miles per gallon (mpg) for each group.
+```
+skimr
+• Provides a detailed and customizable summary.
+```{r}
+install.packages("skimr")
+library(skimr)
+skim(mtcars)
+
+#skim(): Generates a detailed summary of the dataset, including min, max, mean, standard deviation, number of missing values, and quantiles and histogram.
+```
+Hmisc
+• Offers detailed summaries with describe().
+```{r}
+install.packages("Hmisc")
+library(Hmisc)
+describe(mtcars)
+
+#The Hmisc package provides functions for advanced data analysis, including the describe() function that offers detailed summaries of datasets, such as counts, means, medians, and standard deviations, missing values.
+```
+psych
+• Focuses on psychometric and descriptive statistics.
+```{r}
+install.packages("psych")
+library(psych)
+describe(mtcars)
+
+#The psych package is focused on psychometric analysis and descriptive statistics. It provides a function called describe() for detailed summaries of datasets. describe(): Summarizes each variable in a dataset by calculating descriptive statistics such as mean, standard deviation, range, and number of valid (non-missing) values, and skewness for each variable. It is useful for getting a quick overview of data distribution and detecting potential issues with data (e.g., outliers, skewness)
+```
+DataExplorer
+• Automates exploration and summarization.
+```{r}
+install.packages("DataExplorer")
+library(DataExplorer)
+create_report(mtcars)
+
+#the report generated by DataExplorer includes Data Structure, Missing Data Profile, Variable distribution histogram, QQ plot, correlation analysis, Principle component analysis and summary statistics about data.
+```
+5. Exploratory Data Analysis (EDA)
+• Use summarytools for quick summaries and visualizations.
+```{r}
+install.packages("summarytools")
+library(summarytools)
+dfSummary(mtcars)
+
+#dfSummary(mtcars) summarize statics like mean, min, max, IQR, standard deviation, missing values etc.
+```
+• GGally:
+o Create pairwise correlation and scatterplots.
+```{r}
+library(GGally)
+ggpairs(mtcars)
+
+#ggpairs() generates pairwise Scatterplots and Correlations, I could visualize relationships between variables easilty through this function and understanding the correlation coefficeint numbers would render my understanding of how storngly variables are correlated with each other.
+```
+6. Summary for Missing Data
+• is.na():
+o Identify missing values.
+```{r}
+sum(is.na(airquality))
+
+#This code calculates the total number of missing values in the airquality dataset and found 44 missing values.
+```
+• naniar:
+o Visualize and analyze missing data.
+```{r}
+library(naniar)
+vis_miss(airquality)
+
+#this code generates a heatmap like visualization so I could quickly see that Ozone and Solar.R have missing data. Missing data is more spread in Ozone column, but more concentrated in the first 20 rows and row 99 of Solar. R.
+```
